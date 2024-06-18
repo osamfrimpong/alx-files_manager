@@ -1,3 +1,9 @@
+/**
+ * @fileoverview This file contains the implementation of the RedisClient class,
+ * which represents a cached database client for the files_manager application.
+ * @module utils/redis
+ */
+
 import { createClient } from 'redis';
 import { promisify } from 'util';
 
@@ -26,7 +32,8 @@ class RedisClient {
   /**
    * Retrieves the value associated with the given key from Redis.
    * @param {string} key - The key to retrieve the value for.
-   * @returns {Promise<string|null>} A promise that resolves to the value, or null if the key does not exist.
+   * @returns {Promise<string|null>} A promise that resolves to the value,
+   * or null if the key does not exist.
    */
   async get(key) {
     const getFromKey = promisify(this.client.get).bind(this.client);
