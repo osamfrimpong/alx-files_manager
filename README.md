@@ -1,5 +1,5 @@
 # Files Manager API
-This repository contains an API for a files manager developed with Node.js, that enables user authentication, temporary storage with Redis, creation of image thumbnails, and storage of file information using MongoDB. This collaborative project was developed by Chukwuemelie Obumse and Afeez Abu.
+This repository contains an API for a files manager developed with Node.js, that enables user authentication, temporary storage with Redis, creation of image thumbnails, and storage of file information using MongoDB. This collaborative project was developed by Dr. Schandorf Osam-Frimpong and Richard Senyo Gadasu.
 
 # Features
 The Files Manager API provides the following features:
@@ -15,7 +15,7 @@ Storage of File Information using MongoDB: The API leverages MongoDB as a databa
 # Installation
 To set up the File Manager API on your local environment, please follow these steps:
 
-1. Clone this repository to your local machine using the following command: `git clone https://github.com/JasonFlair/alx-files_manager`.
+1. Clone this repository to your local machine using the following command: `git clone https://github.com/osamfrimpong/alx-files_manager`.
 
 2. Install the required dependencies by running the following command in the project's root directory: `npm install`.
 
