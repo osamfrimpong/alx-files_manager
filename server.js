@@ -1,3 +1,4 @@
+/* eslint-disable-next-line import/no-unresolved */
 import express from "express";
 import SetRoutes from "./routes/index";
 
