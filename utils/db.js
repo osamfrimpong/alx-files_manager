@@ -4,11 +4,11 @@
  * @module utils/db
  */
 
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb';
 
-const DATABASE_HOST = process.env.DB_HOST || "localhost";
+const DATABASE_HOST = process.env.DB_HOST || 'localhost';
 const DATABASE_PORT = process.env.DB_PORT || 27017;
-const DATABASE_NAME = process.env.DB_DATABASE || "files_manager";
+const DATABASE_NAME = process.env.DB_DATABASE || 'files_manager';
 const DATABASE_CONNECTION_URL = `mongodb://${DATABASE_HOST}:${DATABASE_PORT}`;
 
 /**
@@ -34,7 +34,7 @@ class DBClient {
         this.connected = true;
       })
       .catch((err) => {
-        console.error("Error connecting to database:", err);
+        console.error('Error connecting to database:', err);
       });
   }
 
@@ -54,7 +54,7 @@ class DBClient {
     if (!this.db) {
       return 0;
     }
-    const foundUsers = this.db.collection("users");
+    const foundUsers = this.db.collection('users');
     const numberOfUsers = await foundUsers.countDocuments();
     return numberOfUsers;
   }
@@ -67,7 +67,7 @@ class DBClient {
     if (!this.db) {
       return 0;
     }
-    const foundFiles = this.db.collection("files");
+    const foundFiles = this.db.collection('files');
     const numberOfFiles = await foundFiles.countDocuments();
     return numberOfFiles;
   }
