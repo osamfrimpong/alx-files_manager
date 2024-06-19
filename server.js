@@ -1,11 +1,11 @@
-import express from 'express';
-import SetRoutes from './routes/index';
+import express from "express";
+import SetRoutes from "./routes/index";
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-SetRoutes(app); // Correct variable name 'app' instead of 'server'
+SetRoutes(app);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
