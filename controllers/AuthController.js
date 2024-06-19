@@ -1,11 +1,17 @@
 /**
- * Controller class for handling user authentication operations.
+ * @fileoverview This file contains the implementation of the AuthController class,
+ * which handles user authentication operations such as sign-in and sign-out.
+ * @module controllers/AuthController
  */
 
-import { v4 as uuidv4 } from "uuid";
-import redisClient from "../utils/redis";
-import sha1 from "sha1";
+import { v4 as uuidv4 } from 'uuid';
+import sha1 from 'sha1';
+import redisClient from '../utils/redis';
+import dbClient from '../utils/db';
 
+/**
+ * Controller class for handling user authentication operations.
+ */
 export default class AuthController {
   /**
    * Handles GET request to sign-in the user by generating a new authentication token.
@@ -19,31 +25,35 @@ export default class AuthController {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      res.status(401).json({ error: "Unauthorized" });
+      res.status(401).json({ error: 'Unauthorized' });
       return;
     }
 
-    const encodedCredentials = authHeader.split(" ")[1];
+    const encodedCredentials = authHeader.split(' ')[1];
     const decodedCredentials = Buffer.from(
       encodedCredentials,
-      "base64"
+      'base64',
     ).toString();
-    const [email, password] = decodedCredentials.split(":");
+    const [email, password] = decodedCredentials.split(':');
 
-    const user = await (
-      await dbClient.usersCollection()
-    ).findOne({ email, password: sha1(password) });
+    try {
+      const user = await (
+        await dbClient.usersCollection()
+      ).findOne({ email, password: sha1(password) });
 
-    if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      if (!user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const token = uuidv4();
+
+      await redisClient.set(`auth_${token}`, user._id.toString(), 24 * 60 * 60);
+
+      res.status(200).json({ token });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    const token = uuidv4();
-
-    await redisClient.set(`auth_${token}`, user._id.toString(), 24 * 60 * 60);
-
-    res.status(200).json({ token });
   }
 
   /**
@@ -54,17 +64,21 @@ export default class AuthController {
    * @returns {Promise<void>}
    */
   static async getDisconnect(req, res) {
-    const token = req.headers["x-token"];
+    const token = req.headers['x-token'];
 
-    const userId = await redisClient.get(`auth_${token}`);
+    try {
+      const userId = await redisClient.get(`auth_${token}`);
 
-    if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      await redisClient.del(`auth_${token}`);
+
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    await redisClient.del(`auth_${token}`);
-
-    res.status(204).send();
   }
 }
