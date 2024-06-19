@@ -1,6 +1,16 @@
-import AppController from '../controllers/AppController';
+/**
+ * Sets up routes for the files_manager API.
+ * @param {Object} app - The Express application instance.
+ */
 
-router.get('/status', AppController.getStatus);
-router.get('/stats', AppController.getStats);
+import AppController from "../controllers/AppController";
 
-module.exports = router;
+const SetRoutes = (app) => {
+  // Endpoint to get status
+  app.get("/status", AppController.getStatus);
+
+  // Endpoint to get statistics
+  app.get("/stats", AppController.getStats);
+};
+
+export default SetRoutes;
