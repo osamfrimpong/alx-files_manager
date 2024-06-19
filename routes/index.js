@@ -3,12 +3,17 @@
  * @param {Object} app - The Express application instance.
  */
 
-import AppController from '../controllers/AppController';
+import AppController from "../controllers/AppController";
+import AuthController from "../controllers/AuthController";
+import UsersController from "../controllers/UsersController";
 
 const SetRoutes = (app) => {
-  app.get('/status', AppController.getStatus);
+  app.get("/status", AppController.getStatus);
+  app.get("/stats", AppController.getStats);
 
-  app.get('/stats', AppController.getStats);
+  app.get("/connect", AuthController.getConnect);
+  app.get("/disconnect", AuthController.getDisconnect);
+  app.get("/users/me", UsersController.getMe);
 };
 
 export default SetRoutes;
