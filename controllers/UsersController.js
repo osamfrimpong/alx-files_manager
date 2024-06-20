@@ -1,71 +1,69 @@
-/* eslint-disable import/no-named-as-default */
 import sha1 from 'sha1';
+import Queue from 'bull/lib/queue';
+import { ObjectID } from 'mongodb';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
+
+const queueForUsers = new Queue('email sending');
 
 /**
- * Controller class for managing user-related operations.
+ * Controller class for handling user-related operations.
  */
-export default class UsersController {
+class UsersController {
   /**
-   * Handles POST request to create a new user.
-   * @param {Object} req - The Express request object.
-   * @param {Object} res - The Express response object.
-   * @returns {Promise<void>}
+   * Create a new user.
+   * @param {Object} request - The request object.
+   * @param {Object} response - The response object.
+   * @returns {Promise<void>} - A promise that resolves when the operation is complete.
    */
-  static async postNew(req, res) {
-    const email = req.body ? req.body.email : null;
-    const password = req.body ? req.body.password : null;
-
+  static async postNew(request, response) {
+    const { email, password } = request.body;
     if (!email) {
-      res.status(400).json({ error: 'Missing email' });
+      response.status(400).json({ error: 'Missing email' });
       return;
     }
     if (!password) {
-      res.status(400).json({ error: 'Missing password' });
+      response.status(400).json({ error: 'Missing password' });
+      return;
+    }
+    const usersCollection = dbClient.db.collection('users');
+    const existingEmail = await usersCollection.findOne({ email });
+    if (existingEmail) {
+      response.status(400).json({ error: 'Already exist' });
       return;
     }
 
-    const user = await (await dbClient.usersCollection()).findOne({ email });
-    if (user) {
-      res.status(400).json({ error: 'Already exist' });
-      return;
-    }
-
-    const insertionInfo = await (
-      await dbClient.usersCollection()
-    ).insertOne({ email, password: sha1(password) });
-    const userId = insertionInfo.insertedId.toString();
-
-    res.status(201).json({ email, id: userId });
+    const shaHashedPw = sha1(password);
+    const inserted = await usersCollection.insertOne({ email, password: shaHashedPw });
+    const userId = inserted.insertedId;
+    queueForUsers.add({ userId });
+    response.status(201).json({ id: userId, email });
   }
 
   /**
-   * Handles GET request to retrieve the authenticated user's information.
-   * @param {Object} req - The Express request object with user information.
-   * @param {Object} res - The Express response object.
-   * @returns {void}
+   * Get the details of the authenticated user.
+   * @param {Object} request - The request object.
+   * @param {Object} response - The response object.
+   * @returns {Promise<void>} - A promise that resolves when the operation is complete.
    */
-  static async getMe(req, res) {
-    const { user } = req;
-
-    res.status(200).json({ email: user.email, id: user._id.toString() });
-  }
-
-  /**
-   * Handles GET request to retrieve user information based on token.
-   * If token is invalid or user is not found, responds with a 401 Unauthorized error.
-   * @param {Object} req - The Express request object with user information extracted from token.
-   * @param {Object} res - The Express response object.
-   * @returns {void}
-   */
-  static async getUserByToken(req, res) {
-    const { user } = req;
-
-    if (!user) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
+  static async getMe(request, response) {
+    const token = request.header('X-Token');
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    const userObjId = new ObjectID(userId);
+    if (userId) {
+      const users = dbClient.db.collection('users');
+      const existingUser = await users.findOne({ _id: userObjId });
+      if (existingUser) {
+        response.status(200).json({ id: userId, email: existingUser.email });
+      } else {
+        response.status(401).json({ error: 'Unauthorized' });
+      }
+    } else {
+      response.status(401).json({ error: 'Unauthorized' });
     }
-
-    res.status(200).json({ email: user.email, id: user._id.toString() });
   }
 }
+
+export default UsersController;
+
