@@ -9,6 +9,7 @@ import { contentType } from 'mime-types';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
 import dbClient from '../utils/db';
+import exp from 'constants';
 
 const VALID_FILE_TYPES = {
   folder: 'folder',
@@ -70,7 +71,7 @@ const isValidId = (id) => {
   });
 };
 
-export default class FilesController {
+class FilesController {
   /**
    * Uploads a file to the file management system.
    * Validates the request, processes the file upload, and stores metadata in the database.
@@ -407,3 +408,5 @@ export default class FilesController {
     }
   }
 }
+
+export default FilesController;
